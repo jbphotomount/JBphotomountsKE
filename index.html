@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JB Photo Mount Pro | Nairobi CBD</title>
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+        }
+
+        .text-stroke {
+            -webkit-text-stroke: 1px rgba(234, 179, 8, 0.3);
+            color: transparent;
+        }
+
+        .gold-gradient {
+            background: linear-gradient(to right, #ca8a04, #facc15, #ca8a04);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ca8a04;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Extract Lucide icons and wrap them into React elements to prevent Error #130
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const LucideIcon = lucide[name];
+            if (!LucideIcon) return null;
+            
+            // Create the SVG string using lucide's internal createVNode/render logic if necessary,
+            // but the cleanest way in this UMD environment is using createELement
+            return React.createElement('i', {
+                'data-lucide': name.toLowerCase(),
+                className: className,
+                style: { width: size, height: size, display: 'inline-block' },
+                ref: (el) => { if(el) lucide.createIcons({ attrs: { size }, nameFilter: [name.toLowerCase()], elements: [el] }); }
+            });
+        };
+
+        const FeatureCard = ({ iconName, title, desc }) => (
+            <div className="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-6 hover:border-yellow-500/30 transition-all">
+                <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500 mb-6">
+                    <Icon name={iconName} size={24} />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{title}</h3>
+                <p className="text-neutral-500 text-sm leading-relaxed">{desc}</p>
+            </div>
+        );
+
+        const SocialBtn = ({ iconName, link }) => (
+            <a href={link} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-neutral-900 rounded-full flex items-center justify-center text-neutral-500 hover:text-yellow-500 hover:border hover:border-yellow-500/20 transition-all">
+                <Icon name={iconName} size={20} />
+            </a>
+        );
+
+        const AdminField = ({ label, value, onChange }) => (
+            <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-neutral-500">{label}</label>
+                <input 
+                    value={value} 
+                    onChange={e => onChange(e.target.value)} 
+                    className="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500 text-white" 
+                />
+            </div>
+        );
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            
+            const [customLogo, setCustomLogo] = useState(() => localStorage.getItem('jb_custom_logo') || null);
+            const [customPortfolio, setCustomPortfolio] = useState(() => {
+                const saved = localStorage.getItem('jb_custom_portfolio');
+                return saved ? JSON.parse(saved) : [
+                    { id: 'p1', url: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&q=80&w=800', category: 'Epoxy' },
+                    { id: 'p2', url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=800', category: 'Framing' },
+                    { id: 'p3', url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=800', category: 'Art' }
+                ];
+            });
+
+            const [appData, setAppData] = useState(() => {
+                const saved = localStorage.getItem('jb_app_data');
+                return saved ? JSON.parse(saved) : {
+                    business: {
+                        name: "JB Photo Mount",
+                        location: "F&F House, Odeon Area, 2nd Floor, Nairobi CBD",
+                        phone: "+254 712 345 678",
+                        email: "info@jbphotomount.co.ke",
+                        whatsapp: "254712345678",
+                        socials: { instagram: "jbphotomount", facebook: "jbphotomount", tiktok: "jbphotomount" }
+                    }
+                };
+            });
+
+            const [orders, setOrders] = useState(() => {
+                const saved = localStorage.getItem('jb_orders');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const [adminAuth, setAdminAuth] = useState(false);
+
+            useEffect(() => {
+                localStorage.setItem('jb_app_data', JSON.stringify(appData));
+            }, [appData]);
+
+            useEffect(() => {
+                localStorage.setItem('jb_orders', JSON.stringify(orders));
+                // Refresh icons whenever DOM updates
+                lucide.createIcons();
+            }, [orders, currentPage]);
+
+            const navigate = (p) => { 
+                setCurrentPage(p); 
+                setIsMenuOpen(false); 
+                window.scrollTo(0, 0); 
+            };
+
+            const GOLD_GRADIENT_VAL = "from-yellow-600 via-yellow-400 to-yellow-600";
+
+            const HomeView = () => (
+                <div className="px-6 animate-fade-in">
+                    <div className="max-w-7xl mx-auto py-20 text-center space-y-12">
+                        <div className="inline-block px-4 py-1 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-black uppercase tracking-[0.2em] rounded-full">EST. 2024 • NAIROBI CBD</div>
+                        <h1 className="text-6xl md:text-9xl font-black leading-none tracking-tighter">
+                            PHOTOS INTO <br/> <span className={`bg-gradient-to-r ${GOLD_GRADIENT_VAL} bg-clip-text text-transparent`}>ARTWORK</span>
+                        </h1>
+                        <p className="max-w-2xl mx-auto text-neutral-400 text-lg md:text-xl">Nairobi's premium destination for luxury Epoxy mounting and professional printing services.</p>
+                        <div className="flex flex-col md:flex-row justify-center gap-6">
+                            <button onClick={() => navigate('order')} className="px-12 py-5 bg-yellow-500 text-black font-black text-xl rounded-2xl hover:scale-105 transition-all">ORDER ONLINE</button>
+                            <button onClick={() => navigate('portfolio')} className="px-12 py-5 bg-neutral-900 border border-neutral-800 text-white font-black text-xl rounded-2xl">OUR GALLERY</button>
+                        </div>
+                    </div>
+                    
+                    <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 py-20 border-t border-neutral-900">
+                        <FeatureCard iconName="Layers" title="Epoxy Finish" desc="Glass-like high gloss coating that protects and enhances colors." />
+                        <FeatureCard iconName="Camera" title="Fine Art Printing" desc="Museum-quality Giclee printing on premium archival papers." />
+                        <FeatureCard iconName="Frame" title="Luxury Frames" desc="Custom handcrafted frames tailored for your home or office." />
+                    </div>
+                </div>
+            );
+
+            const AboutView = () => (
+                <div className="max-w-4xl mx-auto px-6 py-20 space-y-12 animate-fade-in">
+                    <h2 className="text-5xl font-black text-yellow-500">ABOUT EXCELLENCE</h2>
+                    <div className="grid md:grid-cols-2 gap-12 text-neutral-400 leading-relaxed text-lg">
+                        <p>JB Photo Mount was founded with a single mission: to provide Nairobi with a truly world-class photo finishing experience. We believe your memories deserve more than a digital screen.</p>
+                        <p>Our studio in F&F House uses the latest epoxy curing technology to ensure every piece is bubble-free, perfectly leveled, and protected against UV damage for decades to come.</p>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&q=80&w=1200" className="w-full rounded-3xl h-80 object-cover border border-neutral-800" alt="studio" />
+                </div>
+            );
+
+            const PortfolioView = () => (
+                <div className="max-w-7xl mx-auto px-6 py-20 animate-fade-in">
+                    <h2 className="text-4xl font-black mb-12 text-center uppercase tracking-widest">Our <span className="text-yellow-500">Portfolio</span></h2>
+                    <div className="columns-1 md:columns-3 gap-6 space-y-6">
+                        {customPortfolio.map(p => (
+                            <div key={p.id} className="relative group overflow-hidden rounded-2xl border border-neutral-800">
+                                <img src={p.url} className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-700" alt="portfolio" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter">{p.category || 'Portfolio'}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const OrderView = () => {
+                const [form, setForm] = useState({ name: '', phone: '', size: 'A4', file: null, preview: null, desc: '' });
+                const [loading, setLoading] = useState(false);
+                const [success, setSuccess] = useState(false);
+
+                const onFile = (e) => {
+                    const f = e.target.files[0];
+                    if (f) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            setForm({ ...form, file: f, preview: reader.result });
+                        };
+                        reader.readAsDataURL(f);
+                    }
+                };
+
+                const onSubmit = (e) => {
+                    e.preventDefault();
+                    if (!form.preview) {
+                        alert("Please upload your photo");
+                        return;
+                    }
+                    setLoading(true);
+                    setTimeout(() => {
+                        const newOrder = {
+                            id: Date.now().toString(),
+                            orderId: `JB-${Math.floor(1000 + Math.random() * 9000)}`,
+                            customer: form.name,
+                            phone: form.phone,
+                            size: form.size,
+                            description: form.desc,
+                            status: 'pending',
+                            timestamp: new Date().toISOString()
+                        };
+                        setOrders([newOrder, ...orders]);
+                        setSuccess(true);
+                        setLoading(false);
+                    }, 1500);
+                };
+
+                if (success) return (
+                    <div className="max-w-2xl mx-auto py-32 text-center space-y-6 animate-fade-in">
+                        <Icon name="CheckCircle" size={64} className="text-green-500 mx-auto" />
+                        <h2 className="text-4xl font-black">ORDER PLACED!</h2>
+                        <p className="text-neutral-500">Your artwork is being queued. We will WhatsApp you shortly.</p>
+                        <button onClick={() => setSuccess(false)} className="text-yellow-500 font-bold">Place another order</button>
+                    </div>
+                );
+
+                return (
+                    <div className="max-w-4xl mx-auto px-6 py-20 animate-fade-in">
+                        <div className="grid md:grid-cols-2 gap-12">
+                            <div className="space-y-6">
+                                <h2 className="text-5xl font-black uppercase">Start <span className="text-yellow-500">Creation</span></h2>
+                                <p className="text-neutral-500 text-lg leading-relaxed">Upload your memories directly. We accept high-resolution JPG and PNG for luxury mounting.</p>
+                                <div className="space-y-6 pt-6">
+                                    {[
+                                        "Select Print Size (A4 to A1)",
+                                        "Upload Your Original File",
+                                        "Pay via M-Pesa on Pickup"
+                                    ].map((text, i) => (
+                                        <div key={i} className="flex gap-4 items-center">
+                                            <div className="w-10 h-10 bg-neutral-900 rounded-full flex items-center justify-center text-yellow-500 font-bold">{i+1}</div>
+                                            <p className="font-bold">{text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <form onSubmit={onSubmit} className="bg-neutral-900 p-8 rounded-3xl border border-neutral-800 space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Your Name</label>
+                                    <input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-black border border-neutral-800 p-4 rounded-xl focus:border-yellow-500 outline-none" placeholder="Enter Full Name" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">WhatsApp Phone</label>
+                                    <input required type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="w-full bg-black border border-neutral-800 p-4 rounded-xl focus:border-yellow-500 outline-none" placeholder="0712 345 678" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Choose Size</label>
+                                        <select value={form.size} onChange={e => setForm({...form, size: e.target.value})} className="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500">
+                                            {['A4', 'A3', 'A2', 'A1', 'Poster'].map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2 flex flex-col justify-end">
+                                        <button type="button" onClick={() => document.getElementById('order-up').click()} className="w-full h-[58px] border-2 border-dashed border-neutral-700 rounded-xl hover:border-yellow-500 flex items-center justify-center gap-2 text-xs font-bold text-neutral-400">
+                                            <Icon name="Upload" size={16} /> {form.preview ? 'File Selected' : 'Direct Upload'}
+                                        </button>
+                                        <input id="order-up" type="file" accept="image/*" className="hidden" onChange={onFile} />
+                                    </div>
+                                </div>
+                                {form.preview && (
+                                    <div className="aspect-video bg-black rounded-xl overflow-hidden border border-yellow-500/20">
+                                        <img src={form.preview} className="w-full h-full object-cover" alt="preview" />
+                                    </div>
+                                )}
+                                <textarea value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} className="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500 h-24 text-sm" placeholder="Special instructions (Frame color, etc.)"></textarea>
+                                <button type="submit" disabled={loading} className="w-full py-5 bg-yellow-500 text-black font-black rounded-2xl hover:bg-yellow-400 transition-all">
+                                    {loading ? 'PROCESSING...' : 'SUBMIT ORDER'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            };
+
+            const AdminView = () => {
+                const [pass, setPass] = useState('');
+                const [tab, setTab] = useState('orders');
+
+                if (!adminAuth) return (
+                    <div className="max-w-md mx-auto py-40 px-6 animate-fade-in">
+                        <form onSubmit={(e) => { e.preventDefault(); if(pass === 'JBADMIN') setAdminAuth(true); else alert('Wrong Key'); }} className="bg-neutral-900 p-8 rounded-3xl border border-neutral-800 text-center space-y-6">
+                            <Icon name="ShieldCheck" size={48} className="text-yellow-500 mx-auto" />
+                            <h2 className="text-2xl font-black">Staff Access Only</h2>
+                            <input type="password" value={pass} onChange={e => setPass(e.target.value)} className="w-full bg-black border border-neutral-800 p-4 rounded-xl text-center tracking-[1em]" placeholder="••••" />
+                            <button className="w-full py-4 bg-yellow-500 text-black font-black rounded-xl">Unlock Dashboard</button>
+                        </form>
+                    </div>
+                );
+
+                const handleLogoUpload = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            setCustomLogo(reader.result);
+                            localStorage.setItem('jb_custom_logo', reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+
+                const handlePortfolioAdd = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const newItem = { id: Date.now().toString(), url: reader.result, category: 'New' };
+                            const updated = [newItem, ...customPortfolio];
+                            setCustomPortfolio(updated);
+                            localStorage.setItem('jb_custom_portfolio', JSON.stringify(updated));
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+
+                return (
+                    <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12 animate-fade-in">
+                        <div className="w-full md:w-64 space-y-2">
+                            {['orders', 'website', 'portfolio'].map(t => (
+                                <button key={t} onClick={() => setTab(t)} className={`w-full p-4 rounded-xl text-left font-black capitalize transition-all ${tab === t ? 'bg-yellow-500 text-black' : 'hover:bg-neutral-900 text-neutral-500'}`}>{t}</button>
+                            ))}
+                            <button onClick={() => setAdminAuth(false)} className="w-full p-4 text-red-500 font-bold text-left flex gap-2 items-center"><Icon name="LogOut" size={16} /> Logout</button>
+                        </div>
+                        <div className="flex-1 bg-neutral-900/50 border border-neutral-800 rounded-3xl p-8">
+                            {tab === 'orders' && (
+                                <div className="space-y-6">
+                                    <h3 className="text-3xl font-black mb-6">Recent Orders ({orders.length})</h3>
+                                    <div className="space-y-4">
+                                        {orders.map(o => (
+                                            <div key={o.id} className="bg-black p-6 rounded-2xl border border-neutral-800 flex flex-col md:flex-row justify-between gap-6">
+                                                <div>
+                                                    <div className="flex gap-2 items-center mb-1"><span className="text-yellow-500 font-black text-xs uppercase">{o.orderId}</span></div>
+                                                    <h4 className="text-xl font-bold">{o.customer}</h4>
+                                                    <p className="text-neutral-500 text-sm">{o.phone} • {o.size}</p>
+                                                    <p className="text-xs italic text-neutral-600 mt-2">{o.description}</p>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <button onClick={() => setOrders(orders.filter(item => item.id !== o.id))} className="text-red-500 text-xs text-left px-2">Delete Record</button>
+                                                    <a href={`https://wa.me/${o.phone}`} className="px-4 py-2 bg-green-600 rounded-lg text-[10px] font-black text-center text-white">CONTACT CUSTOMER</a>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {tab === 'website' && (
+                                <div className="space-y-8">
+                                    <h3 className="text-3xl font-black">Site Identity</h3>
+                                    <div className="p-6 bg-black rounded-2xl border border-neutral-800 space-y-4">
+                                        <h4 className="text-sm font-black uppercase text-yellow-500">Logo</h4>
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-20 h-20 bg-neutral-900 rounded border border-neutral-800 flex items-center justify-center overflow-hidden">
+                                                {customLogo ? <img src={customLogo} className="w-full h-full object-contain" /> : <Icon name="Layers" className="text-neutral-700" />}
+                                            </div>
+                                            <div>
+                                                <input type="file" id="logo-up" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                                                <button onClick={() => document.getElementById('logo-up').click()} className="px-6 py-2 bg-neutral-800 hover:bg-yellow-500 hover:text-black rounded-full text-xs font-black">REPLACE LOGO</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-8">
+                                        <AdminField label="Business Name" value={appData.business.name} onChange={v => setAppData({...appData, business: {...appData.business, name: v}})} />
+                                        <AdminField label="Phone" value={appData.business.phone} onChange={v => setAppData({...appData, business: {...appData.business, phone: v}})} />
+                                        <AdminField label="Nairobi Address" value={appData.business.location} onChange={v => setAppData({...appData, business: {...appData.business, location: v}})} />
+                                    </div>
+                                </div>
+                            )}
+                            {tab === 'portfolio' && (
+                                <div className="space-y-8">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-3xl font-black">Gallery</h3>
+                                        <div>
+                                            <input type="file" id="port-up" accept="image/*" className="hidden" onChange={handlePortfolioAdd} />
+                                            <button onClick={() => document.getElementById('port-up').click()} className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black rounded-xl font-black text-xs uppercase"><Icon name="Plus" size={16}/> Upload Photo</button>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {customPortfolio.map(item => (
+                                            <div key={item.id} className="group relative aspect-square bg-black rounded-xl border border-neutral-800 overflow-hidden">
+                                                <img src={item.url} className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                                    <button onClick={() => {
+                                                        const updated = customPortfolio.filter(p => p.id !== item.id);
+                                                        setCustomPortfolio(updated);
+                                                        localStorage.setItem('jb_custom_portfolio', JSON.stringify(updated));
+                                                    }} className="p-3 bg-red-600 rounded-full"><Icon name="Trash2" size={16}/></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            const PricingView = () => {
+                const sizes = [
+                    { name: 'A4', size: '210 x 297mm', price: '2,500' },
+                    { name: 'A3', size: '297 x 420mm', price: '4,500' },
+                    { name: 'A2', size: '420 x 594mm', price: '8,000' },
+                    { name: 'A1', size: '594 x 841mm', price: '15,000' },
+                    { name: 'Poster', size: '1000 x 700mm', price: '25,000' },
+                ];
+                return (
+                    <div className="max-w-5xl mx-auto px-6 py-20 animate-fade-in">
+                        <h2 className="text-4xl font-black mb-12 text-center text-yellow-500 uppercase tracking-widest">Pricing Table</h2>
+                        <div className="overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-900/50">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-neutral-900 text-yellow-500 uppercase font-black">
+                                    <tr>
+                                        <th className="p-6">Mount Size</th>
+                                        <th className="p-6">Dimensions</th>
+                                        <th className="p-6">Price (KES)</th>
+                                        <th className="p-6"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-900">
+                                    {sizes.map(s => (
+                                        <tr key={s.name} className="hover:bg-neutral-900 transition-colors">
+                                            <td className="p-6 font-bold text-lg">{s.name}</td>
+                                            <td className="p-6 text-neutral-500">{s.size}</td>
+                                            <td className="p-6 font-black text-xl">{s.price}</td>
+                                            <td className="p-6 text-right"><button onClick={() => navigate('order')} className="text-yellow-500 font-black">ORDER</button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            };
+
+            const ContactView = () => (
+                <div className="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row gap-20 animate-fade-in">
+                    <div className="flex-1 space-y-12">
+                        <h2 className="text-6xl font-black">LET'S <span className="text-yellow-500 text-stroke">TALK</span></h2>
+                        <div className="space-y-8">
+                            <div className="flex gap-4">
+                                <div className="w-12 h-12 bg-neutral-900 rounded-full flex items-center justify-center text-yellow-500"><Icon name="MapPin" /></div>
+                                <div><h4 className="font-black text-sm uppercase">STUDIO ADDRESS</h4><p className="text-neutral-500">{appData.business.location}</p></div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="w-12 h-12 bg-neutral-900 rounded-full flex items-center justify-center text-yellow-500"><Icon name="Phone" /></div>
+                                <div><h4 className="font-black text-sm uppercase">CALL / WHATSAPP</h4><p className="text-neutral-500">{appData.business.phone}</p></div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="w-12 h-12 bg-neutral-900 rounded-full flex items-center justify-center text-yellow-500"><Icon name="Mail" /></div>
+                                <div><h4 className="font-black text-sm uppercase">GENERAL EMAIL</h4><p className="text-neutral-500">{appData.business.email || 'info@jbphotomount.co.ke'}</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex-1">
+                        <div className="bg-neutral-900 aspect-video rounded-3xl border border-neutral-800 flex items-center justify-center overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover opacity-20 grayscale" alt="nairobi map placeholder" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="font-black text-yellow-500 uppercase tracking-widest bg-black/50 px-6 py-3 rounded-full border border-yellow-500/20">Odeon Area, CBD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <nav className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-md border-b border-yellow-500/10 h-20 flex items-center px-6">
+                        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('home')}>
+                                {customLogo ? (
+                                    <img src={customLogo} className="w-10 h-10 object-contain rounded" alt="logo" />
+                                ) : (
+                                    <div className={`w-10 h-10 bg-gradient-to-br ${GOLD_GRADIENT_VAL} rounded flex items-center justify-center`}>
+                                        <Icon name="Layers" className="text-black" size={20} />
+                                    </div>
+                                )}
+                                <span className="text-xl font-black tracking-tighter text-yellow-500">{appData.business.name}</span>
+                            </div>
+                            <div className="hidden md:flex gap-8 text-sm font-bold uppercase tracking-widest text-neutral-400">
+                                {['home', 'about', 'portfolio', 'pricing', 'contact'].map(p => (
+                                    <button key={p} onClick={() => navigate(p)} className={`hover:text-yellow-500 transition-colors ${currentPage === p ? 'text-yellow-500' : ''}`}>{p}</button>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <button onClick={() => navigate('order')} className={`hidden md:block px-6 py-2 bg-gradient-to-r ${GOLD_GRADIENT_VAL} text-black font-bold rounded-full text-sm`}>Order Now</button>
+                                <button className="md:hidden text-yellow-500" onClick={() => setIsMenuOpen(!isMenuOpen)}>{isMenuOpen ? <Icon name="X" /> : <Icon name="Menu" />}</button>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 z-40 bg-black flex flex-col p-12 space-y-8 text-3xl font-black pt-32">
+                            {['home', 'about', 'portfolio', 'pricing', 'contact', 'admin'].map(p => (
+                                <button key={p} onClick={() => navigate(p)} className="text-left capitalize text-yellow-500">{p}</button>
+                            ))}
+                            <button onClick={() => navigate('order')} className="w-full py-4 bg-yellow-500 text-black rounded-xl">Order Online</button>
+                        </div>
+                    )}
+
+                    <main className="pt-24 flex-grow">
+                        {currentPage === 'home' && <HomeView />}
+                        {currentPage === 'about' && <AboutView />}
+                        {currentPage === 'portfolio' && <PortfolioView />}
+                        {currentPage === 'pricing' && <PricingView />}
+                        {currentPage === 'contact' && <ContactView />}
+                        {currentPage === 'order' && <OrderView />}
+                        {currentPage === 'admin' && <AdminView />}
+                    </main>
+
+                    <footer className="bg-black border-t border-neutral-900 py-20 px-6">
+                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+                            <div className="space-y-6">
+                                <h2 className="text-2xl font-black text-yellow-500">{appData.business.name}</h2>
+                                <p className="text-neutral-500 text-sm leading-relaxed">Nairobi's premier destination for luxury Epoxy mounting and professional photo finishing.</p>
+                                <div className="flex gap-4">
+                                    <SocialBtn iconName="Instagram" link={`https://instagram.com/${appData.business.socials?.instagram || 'jbphotomount'}`} />
+                                    <SocialBtn iconName="Facebook" link={`https://facebook.com/${appData.business.socials?.facebook || 'jbphotomount'}`} />
+                                    <SocialBtn iconName="Video" link={`https://tiktok.com/@${appData.business.socials?.tiktok || 'jbphotomount'}`} />
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="font-bold mb-6 text-yellow-500 uppercase tracking-widest text-xs">Services</h4>
+                                <ul className="space-y-3 text-neutral-400 text-sm">
+                                    <li>Epoxy Photo Mounting</li>
+                                    <li>Premium Canvas Printing</li>
+                                    <li>Custom Frame Art</li>
+                                    <li>Photo Restoration</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-bold mb-6 text-yellow-500 uppercase tracking-widest text-xs">Contact Us</h4>
+                                <ul className="space-y-3 text-neutral-400 text-sm">
+                                    <li className="flex gap-2"><Icon name="MapPin" size={16} className="text-yellow-500" /> {appData.business.location}</li>
+                                    <li className="flex gap-2"><Icon name="Phone" size={16} className="text-yellow-500" /> {appData.business.phone}</li>
+                                    <li className="flex gap-2"><Icon name="Mail" size={16} className="text-yellow-500" /> {appData.business.email || 'info@jbphotomount.co.ke'}</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-bold mb-6 text-yellow-500 uppercase tracking-widest text-xs">Management</h4>
+                                <button onClick={() => navigate('admin')} className="text-neutral-600 hover:text-yellow-500 text-sm transition-colors">Staff Login</button>
+                            </div>
+                        </div>
+                    </footer>
+
+                    <a href={`https://wa.me/${appData.business.whatsapp || '254712345678'}`} target="_blank" className="fixed bottom-8 right-8 z-50 p-4 bg-green-600 rounded-full shadow-2xl hover:scale-110 transition-all text-white">
+                        <Icon name="MessageCircle" size={28} />
+                    </a>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
