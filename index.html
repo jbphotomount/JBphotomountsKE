@@ -124,9 +124,9 @@
                 return saved ? JSON.parse(saved) : {
                     business: {
                         name: "JB Photo Mount",
-                        location: "F&F House, Odeon Area, 2nd Floor, Nairobi CBD",
+                        location: "F&F House, Odeon Area, 4th Floor Shop No 1, Nairobi KENYA",
                         phone: "+254 712 345 678",
-                        email: "info@jbphotomount.co.ke",
+                        email: "jbphotomounts254@gmail.com",
                         whatsapp: "254712345678",
                         socials: { instagram: "jbphotomount", facebook: "jbphotomount", tiktok: "jbphotomount" }
                     }
@@ -156,14 +156,14 @@
                 window.scrollTo(0, 0); 
             };
 
-            const GOLD_GRADIENT_VAL = "from-yellow-600 via-yellow-400 to-yellow-600";
+            const RED_GRADIENT_VAL = "from-white-600 via-white-400 to-white-600";
 
             const HomeView = () => (
                 <div className="px-6 animate-fade-in">
                     <div className="max-w-7xl mx-auto py-20 text-center space-y-12">
-                        <div className="inline-block px-4 py-1 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-black uppercase tracking-[0.2em] rounded-full">EST. 2024 • NAIROBI CBD</div>
+                        <div className="inline-block px-4 py-1 bg-white-500/10 border border-red-500/20 text-black-500 text-xs font-black uppercase tracking-[0.2em] rounded-full">EST. 2024 • NAIROBI CBD</div>
                         <h1 className="text-6xl md:text-9xl font-black leading-none tracking-tighter">
-                            PHOTOS INTO <br/> <span className={`bg-gradient-to-r ${GOLD_GRADIENT_VAL} bg-clip-text text-transparent`}>ARTWORK</span>
+                            PHOTOS INTO <br/> <span className={`bg-gradient-to-r ${RED_GRADIENT_VAL} bg-clip-text text-transparent`}>ARTWORK</span>
                         </h1>
                         <p className="max-w-2xl mx-auto text-neutral-400 text-lg md:text-xl">Nairobi's premium destination for luxury Epoxy mounting and professional printing services.</p>
                         <div className="flex flex-col md:flex-row justify-center gap-6">
@@ -199,7 +199,7 @@
                             <div key={p.id} className="relative group overflow-hidden rounded-2xl border border-neutral-800">
                                 <img src={p.url} className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-700" alt="portfolio" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                                    <span className="bg-yellow-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter">{p.category || 'Portfolio'}</span>
+                                    <span className="bg-white-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter">{p.category || 'Portfolio'}</span>
                                 </div>
                             </div>
                         ))}
@@ -269,7 +269,7 @@
                                         "Pay via M-Pesa on Pickup"
                                     ].map((text, i) => (
                                         <div key={i} className="flex gap-4 items-center">
-                                            <div className="w-10 h-10 bg-neutral-900 rounded-full flex items-center justify-center text-yellow-500 font-bold">{i+1}</div>
+                                            <div className="w-10 h-10 bg-neutral-900 rounded-full flex items-center justify-center text-black-500 font-bold">{i+1}</div>
                                             <p className="font-bold">{text}</p>
                                         </div>
                                     ))}
@@ -288,7 +288,7 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Choose Size</label>
-                                        <select value={form.size} onChange={e => setForm({...form, size: e.target.value})} className="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500">
+                                        <select value={form.size} onChange={e => setForm({...form, size: e.target.value})} className="w-full bg-white border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500">
                                             {['A4', 'A3', 'A2', 'A1', 'Poster'].map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </div>
@@ -300,12 +300,12 @@
                                     </div>
                                 </div>
                                 {form.preview && (
-                                    <div className="aspect-video bg-black rounded-xl overflow-hidden border border-yellow-500/20">
+                                    <div className="aspect-video bg-black rounded-xl overflow-hidden border border-red-500/20">
                                         <img src={form.preview} className="w-full h-full object-cover" alt="preview" />
                                     </div>
                                 )}
-                                <textarea value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} className="w-full bg-black border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500 h-24 text-sm" placeholder="Special instructions (Frame color, etc.)"></textarea>
-                                <button type="submit" disabled={loading} className="w-full py-5 bg-yellow-500 text-black font-black rounded-2xl hover:bg-yellow-400 transition-all">
+                                <textarea value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} className="w-full bg-red border border-neutral-800 p-4 rounded-xl outline-none focus:border-yellow-500 h-24 text-sm" placeholder="Special instructions (Frame color, etc.)"></textarea>
+                                <button type="submit" disabled={loading} className="w-full py-5 bg-white-500 text-black font-black rounded-2xl hover:bg-red-400 transition-all">
                                     {loading ? 'PROCESSING...' : 'SUBMIT ORDER'}
                                 </button>
                             </form>
@@ -410,7 +410,7 @@
                             {tab === 'portfolio' && (
                                 <div className="space-y-8">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-3xl font-black">Gallery</h3>
+                                        <h3 className="text-3xl font-red">Gallery</h3>
                                         <div>
                                             <input type="file" id="port-up" accept="image/*" className="hidden" onChange={handlePortfolioAdd} />
                                             <button onClick={() => document.getElementById('port-up').click()} className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black rounded-xl font-black text-xs uppercase"><Icon name="Plus" size={16}/> Upload Photo</button>
